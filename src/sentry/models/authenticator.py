@@ -277,9 +277,9 @@ class RecoveryCodeInterface(AuthenticatorInterface):
     interface_id = 'recovery'
     name = _('Recovery Codes')
     description = _(
-        'Recovery codes can be used to access your account in the '
-        'event you lose access to your device and cannot '
-        'receive two-factor authentication codes.'
+        'Recovery codes are the only way to access your account '
+        'if you lose your device and cannot receive two factor '
+        'authentication codes.'
     )
     enroll_button = _('Activate')
     configure_button = _('View Codes')
@@ -441,10 +441,19 @@ class SmsInterface(OtpMixin, AuthenticatorInterface):
     del _get_phone_number, _set_phone_number
 
     def activate(self, request):
+        phone_number = self.config['phone_number']
+        if len(phone_number) == 10:
+            mask = '(***) ***-**%s' % (phone_number[-2:])
+        else:
+            mask = '%s%s' % ((len(phone_number) - 2) * '*', phone_number[-2:])
+
         if self.send_text(request=request):
             return ActivationMessageResult(
-                _('A confirmation code was sent to your phone. '
-                  'It is valid for %d seconds.') % self.code_ttl
+                _('A confirmation code was sent to %(phone_mask)s. '
+                  'It is valid for %(ttl)d seconds.') % {
+                    'phone_mask': '<strong>%s</strong>' % mask,
+                    'ttl': self.code_ttl,
+                }
             )
         return ActivationMessageResult(
             _(

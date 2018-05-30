@@ -1,5 +1,6 @@
 .cache/
 .coverage
+.storybook-out/
 .DS_Store
 *.egg-info
 *.pyc
@@ -12,7 +13,7 @@ test.conf
 pip-log.txt
 celerybeat-schedule
 sentry-package.json
-/htmlcov
+/coverage/
 /cover
 /build
 /dist
@@ -34,4 +35,9 @@ example/db.sqlite
 /test_cli/
 Gemfile.lock
 .idea/
+.pytest_cache/
 .vscode/tags
+coverage.xml
+junit.xml
+*.codestyle.xml
+.pytest_cache/

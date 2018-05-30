@@ -14,7 +14,7 @@ class AccountNotificationSettingsTest(AcceptanceTestCase):
         self.team = self.create_team(organization=self.org, name='Mariachi Band')
         self.project = self.create_project(
             organization=self.org,
-            team=self.team,
+            teams=[self.team],
             name='Bengal',
         )
         self.create_member(
@@ -30,3 +30,12 @@ class AccountNotificationSettingsTest(AcceptanceTestCase):
         self.browser.get(self.path)
         self.browser.wait_until_not('.loading-indicator')
         self.browser.snapshot('account notification settings')
+
+    def test_new_simple(self):
+        self.browser.get('/settings/account/notifications/')
+        self.browser.wait_until_not('.loading-indicator')
+        self.browser.snapshot('account notification - settings (new)')
+
+        self.browser.click_when_visible('#Alerts a')
+        self.browser.wait_until_not('.loading-indicator')
+        self.browser.snapshot('account notification - fine tune "Alerts" (new)')

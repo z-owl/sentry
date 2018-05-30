@@ -1,0 +1,500 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProjectCard renders 1`] = `
+<ProjectCard
+  params={
+    Object {
+      "orgId": "org-slug",
+    }
+  }
+  project={
+    Object {
+      "hasAccess": true,
+      "id": "2",
+      "isBookmarked": false,
+      "isMember": true,
+      "name": "Project Name",
+      "platform": "javascript",
+      "slug": "project-slug",
+      "stats": Array [
+        Array [
+          1525042800,
+          1,
+        ],
+        Array [
+          1525046400,
+          2,
+        ],
+      ],
+      "teams": Array [],
+    }
+  }
+>
+  <ProjectCardWrapper
+    data-test-id="project-slug"
+    width={
+      Array [
+        "100%",
+        "50%",
+        "33%",
+        "25%",
+      ]
+    }
+  >
+    <Base
+      className="css-3jemnr-ProjectCardWrapper efesc7i3"
+      data-test-id="project-slug"
+      width={
+        Array [
+          "100%",
+          "50%",
+          "33%",
+          "25%",
+        ]
+      }
+    >
+      <div
+        className="css-3jemnr-ProjectCardWrapper efesc7i3"
+        data-test-id="project-slug"
+        is={null}
+      >
+        <StyledProjectCard>
+          <div
+            className="css-18be1td-StyledProjectCard efesc7i4"
+          >
+            <Flex
+              align="center"
+              justify="space-between"
+            >
+              <Base
+                align="center"
+                className="css-v7pzd9"
+                justify="space-between"
+              >
+                <div
+                  className="css-v7pzd9"
+                  is={null}
+                >
+                  <Box
+                    ml={2}
+                  >
+                    <Base
+                      className="css-1dvsqd3"
+                      ml={2}
+                    >
+                      <div
+                        className="css-1dvsqd3"
+                        is={null}
+                      >
+                        <StyledPlatformicon
+                          platform="javascript"
+                          size="24"
+                        >
+                          <Platformicon
+                            className="css-12pxqdy-StyledPlatformicon efesc7i0"
+                            platform="javascript"
+                            size="24"
+                          >
+                            <img
+                              className="css-12pxqdy-StyledPlatformicon efesc7i0"
+                              height="24"
+                              src={
+                                Object {
+                                  "default": Object {
+                                    "id": "test",
+                                    "viewBox": Object {},
+                                  },
+                                }
+                              }
+                              width="24"
+                            />
+                          </Platformicon>
+                        </StyledPlatformicon>
+                      </div>
+                    </Base>
+                  </Box>
+                  <StyledTitle>
+                    <div
+                      className="css-zq8dzg-StyledTitle efesc7i2"
+                    >
+                      <div>
+                        project-slug
+                      </div>
+                    </div>
+                  </StyledTitle>
+                  <Tooltip
+                    title="Add to bookmarks"
+                  >
+                    <Star
+                      active={false}
+                      className="tip project-select-bookmark icon icon-star-solid"
+                      onClick={[Function]}
+                      title="Add to bookmarks"
+                    >
+                      <a
+                        className="tip project-select-bookmark icon icon-star-solid css-31kf5u-Star efesc7i5"
+                        onClick={[Function]}
+                        title="Add to bookmarks"
+                      />
+                    </Star>
+                  </Tooltip>
+                </div>
+              </Base>
+            </Flex>
+            <ChartContainer>
+              <div
+                className="css-1s8o1vf-ChartContainer efesc7i1"
+              >
+                <Chart
+                  noEvents={true}
+                  stats={
+                    Array [
+                      Array [
+                        1525042800,
+                        1,
+                      ],
+                      Array [
+                        1525046400,
+                        2,
+                      ],
+                    ]
+                  }
+                >
+                  <div>
+                    <StyledBarChart
+                      height={60}
+                      label="events"
+                      points={
+                        Array [
+                          Object {
+                            "x": 1525042800,
+                            "y": 1,
+                          },
+                          Object {
+                            "x": 1525046400,
+                            "y": 2,
+                          },
+                        ]
+                      }
+                    >
+                      <BarChart
+                        className="css-h6aoq0-StyledBarChart e1wib7610"
+                        height={60}
+                        label="events"
+                        points={
+                          Array [
+                            Object {
+                              "x": 1525042800,
+                              "y": 1,
+                            },
+                            Object {
+                              "x": 1525046400,
+                              "y": 2,
+                            },
+                          ]
+                        }
+                      >
+                        <StackedBarChart
+                          barClasses={
+                            Array [
+                              "chart-bar",
+                            ]
+                          }
+                          className="css-h6aoq0-StyledBarChart e1wib7610"
+                          height={60}
+                          label="events"
+                          markers={Array []}
+                          points={
+                            Array [
+                              Object {
+                                "x": 1525042800,
+                                "y": Array [
+                                  1,
+                                ],
+                              },
+                              Object {
+                                "x": 1525046400,
+                                "y": Array [
+                                  2,
+                                ],
+                              },
+                            ]
+                          }
+                          series={Array []}
+                          width={null}
+                        >
+                          <figure
+                            className="css-h6aoq0-StyledBarChart e1wib7610 barchart"
+                            style={
+                              Object {
+                                "height": 60,
+                                "width": null,
+                              }
+                            }
+                          >
+                            <span
+                              className="max-y"
+                            >
+                              <count
+                                value={10}
+                              >
+                                <span>
+                                  10
+                                </span>
+                              </count>
+                            </span>
+                            <span
+                              className="min-y"
+                            >
+                              0
+                            </span>
+                            <span>
+                              <Tooltip
+                                key="1525042800"
+                                title="<div style=\\"width:130px\\"><div class=\\"time-label\\"><span>April 29, 2018<br />11:00 PM  &#8594; 11:59 PM</span></div></div><div class=\\"value-label\\">1 events</div>"
+                                tooltipOptions={
+                                  Object {
+                                    "html": true,
+                                    "placement": "bottom",
+                                  }
+                                }
+                              >
+                                <a
+                                  className="tip chart-column"
+                                  style={
+                                    Object {
+                                      "height": "100%",
+                                      "width": "50%",
+                                    }
+                                  }
+                                  title="<div style=\\"width:130px\\"><div class=\\"time-label\\"><span>April 29, 2018<br />11:00 PM  &#8594; 11:59 PM</span></div></div><div class=\\"value-label\\">1 events</div>"
+                                >
+                                  <span
+                                    className="chart-bar"
+                                    key="0"
+                                    style={
+                                      Object {
+                                        "backgroundColor": null,
+                                        "bottom": "0%",
+                                        "height": "9.9%",
+                                      }
+                                    }
+                                  >
+                                    1
+                                  </span>
+                                </a>
+                              </Tooltip>
+                              <Tooltip
+                                key="1525046400"
+                                title="<div style=\\"width:130px\\"><div class=\\"time-label\\"><span>April 30, 2018<br />12:00 AM  &#8594; 12:59 AM</span></div></div><div class=\\"value-label\\">2 events</div>"
+                                tooltipOptions={
+                                  Object {
+                                    "html": true,
+                                    "placement": "bottom",
+                                  }
+                                }
+                              >
+                                <a
+                                  className="tip chart-column"
+                                  style={
+                                    Object {
+                                      "height": "100%",
+                                      "width": "50%",
+                                    }
+                                  }
+                                  title="<div style=\\"width:130px\\"><div class=\\"time-label\\"><span>April 30, 2018<br />12:00 AM  &#8594; 12:59 AM</span></div></div><div class=\\"value-label\\">2 events</div>"
+                                >
+                                  <span
+                                    className="chart-bar"
+                                    key="0"
+                                    style={
+                                      Object {
+                                        "backgroundColor": null,
+                                        "bottom": "0%",
+                                        "height": "19.8%",
+                                      }
+                                    }
+                                  >
+                                    2
+                                  </span>
+                                </a>
+                              </Tooltip>
+                            </span>
+                          </figure>
+                        </StackedBarChart>
+                      </BarChart>
+                    </StyledBarChart>
+                  </div>
+                </Chart>
+                <NoEvents>
+                  <Container>
+                    <div
+                      className="css-1m9okvh-Container eks1zeg0"
+                    >
+                      <EmptyText
+                        align="center"
+                        justify="center"
+                      >
+                        <Base
+                          align="center"
+                          className="css-k1bbsy-EmptyText eks1zeg1"
+                          justify="center"
+                        >
+                          <div
+                            className="css-k1bbsy-EmptyText eks1zeg1"
+                            is={null}
+                          >
+                            No activity yet.
+                          </div>
+                        </Base>
+                      </EmptyText>
+                    </div>
+                  </Container>
+                </NoEvents>
+              </div>
+            </ChartContainer>
+            <Deploys
+              orgId="org-slug"
+              project={
+                Object {
+                  "hasAccess": true,
+                  "id": "2",
+                  "isBookmarked": false,
+                  "isMember": true,
+                  "name": "Project Name",
+                  "platform": "javascript",
+                  "slug": "project-slug",
+                  "stats": Array [
+                    Array [
+                      1525042800,
+                      1,
+                    ],
+                    Array [
+                      1525046400,
+                      2,
+                    ],
+                  ],
+                  "teams": Array [],
+                }
+              }
+            >
+              <NoDeploys>
+                <DeployBox
+                  p={2}
+                >
+                  <Base
+                    className="css-1y6xtyw-DeployBox eltxe6c4"
+                    p={2}
+                  >
+                    <div
+                      className="css-1y6xtyw-DeployBox eltxe6c4"
+                      is={null}
+                    >
+                      <Background
+                        align="center"
+                        justify="center"
+                      >
+                        <Base
+                          align="center"
+                          className="css-itelel-Background eltxe6c5"
+                          justify="center"
+                        >
+                          <div
+                            className="css-itelel-Background eltxe6c5"
+                            is={null}
+                          >
+                            <Button
+                              disabled={false}
+                              external={true}
+                              href="https://blog.sentry.io/2017/05/09/release-deploys"
+                              size="xsmall"
+                            >
+                              <StyledButton
+                                aria-label="Track deploys"
+                                disabled={false}
+                                external={true}
+                                href="https://blog.sentry.io/2017/05/09/release-deploys"
+                                onClick={[Function]}
+                                role="button"
+                                size="xsmall"
+                              >
+                                <Component
+                                  aria-label="Track deploys"
+                                  className="css-dkprmi-StyledButton-getColors e17811v30"
+                                  disabled={false}
+                                  external={true}
+                                  href="https://blog.sentry.io/2017/05/09/release-deploys"
+                                  onClick={[Function]}
+                                  role="button"
+                                  size="xsmall"
+                                >
+                                  <ExternalLink
+                                    aria-label="Track deploys"
+                                    className="css-dkprmi-StyledButton-getColors e17811v30"
+                                    disabled={false}
+                                    href="https://blog.sentry.io/2017/05/09/release-deploys"
+                                    onClick={[Function]}
+                                    rel="noreferrer noopener"
+                                    role="button"
+                                    size="xsmall"
+                                    target="_blank"
+                                  >
+                                    <a
+                                      aria-label="Track deploys"
+                                      className="css-dkprmi-StyledButton-getColors e17811v30"
+                                      disabled={false}
+                                      href="https://blog.sentry.io/2017/05/09/release-deploys"
+                                      onClick={[Function]}
+                                      rel="noreferrer noopener"
+                                      role="button"
+                                      size="xsmall"
+                                      target="_blank"
+                                    >
+                                      <ButtonLabel
+                                        size="xsmall"
+                                      >
+                                        <Component
+                                          className="css-9vplug-ButtonLabel e17811v31"
+                                          size="xsmall"
+                                        >
+                                          <Flex
+                                            align="center"
+                                            className="css-9vplug-ButtonLabel e17811v31"
+                                            size="xsmall"
+                                          >
+                                            <Base
+                                              align="center"
+                                              className="e17811v31 css-esdzbq-ButtonLabel"
+                                              size="xsmall"
+                                            >
+                                              <div
+                                                className="e17811v31 css-esdzbq-ButtonLabel"
+                                                is={null}
+                                                size="xsmall"
+                                              >
+                                                Track deploys
+                                              </div>
+                                            </Base>
+                                          </Flex>
+                                        </Component>
+                                      </ButtonLabel>
+                                    </a>
+                                  </ExternalLink>
+                                </Component>
+                              </StyledButton>
+                            </Button>
+                          </div>
+                        </Base>
+                      </Background>
+                    </div>
+                  </Base>
+                </DeployBox>
+              </NoDeploys>
+            </Deploys>
+          </div>
+        </StyledProjectCard>
+      </div>
+    </Base>
+  </ProjectCardWrapper>
+</ProjectCard>
+`;

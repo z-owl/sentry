@@ -1,23 +1,38 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {defined} from '../../utils';
+import {defined} from 'app/utils';
 
-import BooleanField from './booleanField';
-import EmailField from './emailField';
-import NumberField from './numberField';
-import PasswordField from './passwordField';
-import RangeField from './rangeField';
-import Select2FieldAutocomplete from './select2FieldAutocomplete';
-import Select2Field from './select2Field';
-import TextField from './textField';
-import TextareaField from './textareaField';
+import BooleanField from 'app/components/forms/booleanField';
+import EmailField from 'app/components/forms/emailField';
+import NumberField from 'app/components/forms/numberField';
+import PasswordField from 'app/components/forms/passwordField';
+import RangeField from 'app/components/forms/rangeField';
+import Select2FieldAutocomplete from 'app/components/forms/select2FieldAutocomplete';
+import Select2Field from 'app/components/forms/select2Field';
+import Select2TextField from 'app/components/forms/select2TextField';
+import TextField from 'app/components/forms/textField';
+import TextareaField from 'app/components/forms/textareaField';
 
-class GenericField extends React.Component {
+export default class GenericField extends React.Component {
+  static propTypes = {
+    config: PropTypes.object.isRequired,
+    formData: PropTypes.object,
+    formErrors: PropTypes.object,
+    formState: PropTypes.string.isRequired,
+    onChange: PropTypes.func,
+  };
+
+  static defaultProps = {
+    formData: {},
+    formErrors: {},
+  };
+
   render() {
     let config = this.props.config;
     let required = defined(config.required) ? config.required : true;
-    let props = Object.assign(Object.assign({}, config), {
+    let props = {
+      ...config,
       value: this.props.formData[config.name],
       onChange: this.props.onChange,
       label: config.label + (required ? '*' : ''),
@@ -28,10 +43,11 @@ class GenericField extends React.Component {
       disabled: config.readonly,
       key: config.name,
       formState: this.props.formState,
-      help: defined(config.help) && config.help !== ''
-        ? <span dangerouslySetInnerHTML={{__html: config.help}} />
-        : null
-    });
+      help:
+        defined(config.help) && config.help !== '' ? (
+          <span dangerouslySetInnerHTML={{__html: config.help}} />
+        ) : null,
+    };
 
     switch (config.type) {
       case 'secret':
@@ -45,6 +61,7 @@ class GenericField extends React.Component {
       case 'string':
       case 'text':
       case 'url':
+        if (props.choices) return <Select2TextField {...props} />;
         return <TextField {...props} />;
       case 'number':
         return <NumberField {...props} />;
@@ -65,13 +82,3 @@ class GenericField extends React.Component {
     }
   }
 }
-
-GenericField.propTypes = {
-  config: PropTypes.object.isRequired,
-  formData: PropTypes.object,
-  formErrors: PropTypes.object,
-  formState: PropTypes.string.isRequired,
-  onChange: PropTypes.func
-};
-
-export default GenericField;

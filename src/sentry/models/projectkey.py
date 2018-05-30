@@ -14,6 +14,7 @@ import re
 from bitfield import BitField
 from uuid import uuid4
 
+from jsonfield import JSONField
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -55,7 +56,8 @@ class ProjectKey(Model):
     status = BoundedPositiveIntegerField(
         default=0,
         choices=(
-            (ProjectKeyStatus.ACTIVE, _('Active')), (ProjectKeyStatus.INACTIVE, _('Inactive')),
+            (ProjectKeyStatus.ACTIVE, _('Active')),
+            (ProjectKeyStatus.INACTIVE, _('Inactive')),
         ),
         db_index=True
     )
@@ -65,6 +67,8 @@ class ProjectKey(Model):
     rate_limit_window = BoundedPositiveIntegerField(null=True)
 
     objects = BaseManager(cache_fields=('public_key', 'secret_key', ))
+
+    data = JSONField()
 
     # support legacy project keys in API
     scopes = (
@@ -105,7 +109,8 @@ class ProjectKey(Model):
             # ValueError would come from a non-integer project_id,
             # which is obviously a DoesNotExist. We catch and rethrow this
             # so anything downstream expecting DoesNotExist works fine
-            raise ProjectKey.DoesNotExist('ProjectKey matching query does not exist.')
+            raise ProjectKey.DoesNotExist(
+                'ProjectKey matching query does not exist.')
 
     @classmethod
     def get_default(cls, project):
@@ -167,7 +172,33 @@ class ProjectKey(Model):
             endpoint = options.get('system.url-prefix')
 
         return '%s%s?sentry_key=%s' % (
-            endpoint, reverse('sentry-api-csp-report', args=[self.project_id]), self.public_key,
+            endpoint,
+            reverse('sentry-api-csp-report', args=[self.project_id]),
+            self.public_key,
+        )
+
+    @property
+    def security_endpoint(self):
+        endpoint = settings.SENTRY_PUBLIC_ENDPOINT or settings.SENTRY_ENDPOINT
+        if not endpoint:
+            endpoint = options.get('system.url-prefix')
+
+        return '%s%s?sentry_key=%s' % (
+            endpoint,
+            reverse('sentry-api-security-report', args=[self.project_id]),
+            self.public_key,
+        )
+
+    @property
+    def minidump_endpoint(self):
+        endpoint = settings.SENTRY_PUBLIC_ENDPOINT or settings.SENTRY_ENDPOINT
+        if not endpoint:
+            endpoint = options.get('system.url-prefix')
+
+        return '%s%s/?sentry_key=%s' % (
+            endpoint,
+            reverse('sentry-api-minidump', args=[self.project_id]),
+            self.public_key,
         )
 
     def get_allowed_origins(self):

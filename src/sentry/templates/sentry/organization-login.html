@@ -21,7 +21,7 @@
         if (window.sentrypw) {
           window.sentrypw.addStrengthIndicator(
             '#register #id_password',
-            '.password-strength',
+            '.password-strength'
           );
         }
       }, false);
@@ -49,6 +49,7 @@
   {% if provider_name %}
     <form class="form-stacked" action="" method="post" autocomplete="off">
       {% csrf_token %}
+      <input type="hidden" name="init" value="1" />
 
       <div class="align-center">
         <p>Sign in with your {{ provider_name }} account to continue.</p>
@@ -104,6 +105,9 @@
 
           <fieldset class="form-actions">
             <button type="submit" class="btn btn-primary">{% trans "Register" %}</button>
+            <a class="pull-right" style="margin-top: 9px" href="https://sentry.io/privacy/" target="_blank">
+              {% trans "Privacy Policy" %}
+            </a>
           </fieldset>
         </form>
       </div>

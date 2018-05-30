@@ -203,6 +203,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'sentry.middleware.proxy.ChunkedMiddleware',
     'sentry.middleware.proxy.ContentLengthHeaderMiddleware',
     'sentry.middleware.security.SecurityHeadersMiddleware',
     'sentry.middleware.maintenance.ServicesUnavailableMiddleware',
@@ -253,7 +254,7 @@ INSTALLED_APPS = (
     'sentry.analytics.events', 'sentry.nodestore', 'sentry.search', 'sentry.lang.java',
     'sentry.lang.javascript', 'sentry.lang.native', 'sentry.plugins.sentry_interface_types',
     'sentry.plugins.sentry_mail', 'sentry.plugins.sentry_urls', 'sentry.plugins.sentry_useragents',
-    'sentry.plugins.sentry_webhooks', 'social_auth', 'sudo',
+    'sentry.plugins.sentry_webhooks', 'social_auth', 'sudo', 'sentry.tagstore',
 )
 
 import django
@@ -262,6 +263,12 @@ if django.VERSION < (1, 7):
 
 STATIC_ROOT = os.path.realpath(os.path.join(PROJECT_ROOT, 'static'))
 STATIC_URL = '/_static/{version}/'
+
+# various middleware will use this to identify resources which should not access
+# cookies
+ANONYMOUS_STATIC_PREFIXES = (
+    '/_static/', '/avatar/', '/organization-avatar/', '/team-avatar/', '/project-avatar/',
+)
 
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -298,6 +305,7 @@ AUTHENTICATION_BACKENDS = (
     'social_auth.backends.trello.TrelloBackend',
     'social_auth.backends.asana.AsanaBackend',
     'social_auth.backends.slack.SlackBackend',
+    'social_auth.backends.visualstudio.VisualStudioBackend',
 )
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -321,6 +329,7 @@ SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
     'social_auth.backends.github.GithubBackend', 'social_auth.backends.bitbucket.BitbucketBackend',
     'social_auth.backends.trello.TrelloBackend', 'social_auth.backends.asana.AsanaBackend',
     'social_auth.backends.slack.SlackBackend', 'social_auth.backends.github_apps.GithubAppsBackend',
+    'social_auth.backends.visualstudio.VisualStudioBackend',
 )
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
@@ -341,6 +350,11 @@ TRELLO_API_SECRET = ''
 
 BITBUCKET_CONSUMER_KEY = ''
 BITBUCKET_CONSUMER_SECRET = ''
+
+VISUALSTUDIO_APP_ID = ''
+VISUALSTUDIO_APP_SECRET = ''
+VISUALSTUDIO_CLIENT_SECRET = ''
+VISUALSTUDIO_SCOPES = ['vso.work_write', 'vso.project', 'vso.code', 'vso.release']
 
 SOCIAL_AUTH_PIPELINE = (
     'social_auth.backends.pipeline.user.get_username',
@@ -366,6 +380,7 @@ AUTH_PROVIDERS = {
     'bitbucket': ('BITBUCKET_CONSUMER_KEY', 'BITBUCKET_CONSUMER_SECRET'),
     'asana': ('ASANA_CLIENT_ID', 'ASANA_CLIENT_SECRET'),
     'slack': ('SLACK_CLIENT_ID', 'SLACK_CLIENT_SECRET'),
+    'visualstudio': ('VISUALSTUDIO_APP_ID', 'VISUALSTUDIO_APP_SECRET', 'VISUALSTUDIO_CLIENT_SECRET'),
 }
 
 AUTH_PROVIDER_LABELS = {
@@ -374,7 +389,8 @@ AUTH_PROVIDER_LABELS = {
     'trello': 'Trello',
     'bitbucket': 'Bitbucket',
     'asana': 'Asana',
-    'slack': 'Slack'
+    'slack': 'Slack',
+    'visualstudio': 'Visual Studio',
 }
 
 import random
@@ -415,20 +431,26 @@ CELERY_IMPORTS = (
     'sentry.tasks.auth', 'sentry.tasks.auto_resolve_issues', 'sentry.tasks.beacon',
     'sentry.tasks.check_auth', 'sentry.tasks.clear_expired_snoozes',
     'sentry.tasks.collect_project_platforms', 'sentry.tasks.commits', 'sentry.tasks.deletion',
-    'sentry.tasks.digests', 'sentry.tasks.dsymcache', 'sentry.tasks.email', 'sentry.tasks.merge',
+    'sentry.tasks.digests', 'sentry.tasks.email', 'sentry.tasks.merge',
     'sentry.tasks.options', 'sentry.tasks.ping', 'sentry.tasks.post_process',
     'sentry.tasks.process_buffer', 'sentry.tasks.reports', 'sentry.tasks.reprocessing',
-    'sentry.tasks.scheduler', 'sentry.tasks.store', 'sentry.tasks.unmerge',
+    'sentry.tasks.scheduler', 'sentry.tasks.signals', 'sentry.tasks.store', 'sentry.tasks.unmerge',
+    'sentry.tasks.symcache_update', 'sentry.tasks.servicehooks',
+    'sentry.tagstore.tasks', 'sentry.tasks.assemble', 'sentry.tasks.integrations',
 )
 CELERY_QUEUES = [
+    Queue('activity.notify', routing_key='activity.notify'),
     Queue('alerts', routing_key='alerts'),
     Queue('auth', routing_key='auth'),
+    Queue('assemble', routing_key='assemble'),
+    Queue('buffers.process_pending', routing_key='buffers.process_pending'),
     Queue('commits', routing_key='commits'),
     Queue('cleanup', routing_key='cleanup'),
     Queue('default', routing_key='default'),
     Queue('digests.delivery', routing_key='digests.delivery'),
     Queue('digests.scheduling', routing_key='digests.scheduling'),
     Queue('email', routing_key='email'),
+    Queue('events.index_event_tags', routing_key='events.index_event_tags'),
     Queue('events.preprocess_event', routing_key='events.preprocess_event'),
     Queue(
         'events.reprocessing.preprocess_event', routing_key='events.reprocessing.preprocess_event'
@@ -437,6 +459,7 @@ CELERY_QUEUES = [
     Queue('events.reprocessing.process_event', routing_key='events.reprocessing.process_event'),
     Queue('events.reprocess_events', routing_key='events.reprocess_events'),
     Queue('events.save_event', routing_key='events.save_event'),
+    Queue('integrations', routing_key='integrations'),
     Queue('merge', routing_key='merge'),
     Queue('options', routing_key='options'),
     Queue('reports.deliver', routing_key='reports.deliver'),
@@ -503,7 +526,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': timedelta(seconds=10),
         'options': {
             'expires': 10,
-            'queue': 'counters-0',
+            'queue': 'buffers.process_pending',
         }
     },
     'sync-options': {
@@ -535,14 +558,6 @@ CELERYBEAT_SCHEDULE = {
             'expires': 300,
         },
     },
-    # Disabled for the time being:
-    # 'clear-old-cached-dsyms': {
-    #     'task': 'sentry.tasks.clear_old_cached_dsyms',
-    #     'schedule': timedelta(minutes=60),
-    #     'options': {
-    #         'expires': 3600,
-    #     },
-    # },
     'collect-project-platforms': {
         'task': 'sentry.tasks.collect_project_platforms',
         'schedule': timedelta(days=1),
@@ -579,6 +594,13 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
+BGTASKS = {
+    'sentry.bgtasks.clean_dsymcache:clean_dsymcache': {
+        'interval': 5 * 60,
+        'roles': ['worker'],
+    }
+}
+
 # Sentry logs to two major places: stdout, and it's internal project.
 # To disable logging to the internal project, add a logger who's only
 # handler is 'console' and disable propagating upwards.
@@ -603,11 +625,25 @@ LOGGING = {
             'filters': ['sentry:internal'],
             'class': 'raven.contrib.django.handlers.SentryHandler',
         },
+        'metrics': {
+            'level': 'WARNING',
+            'filters': ['important_django_request'],
+            'class': 'sentry.logging.handlers.MetricsLogHandler',
+        },
+        'django_internal': {
+            'level': 'WARNING',
+            'filters': ['sentry:internal', 'important_django_request'],
+            'class': 'raven.contrib.django.handlers.SentryHandler',
+        },
     },
     'filters': {
         'sentry:internal': {
             '()': 'sentry.utils.raven.SentryInternalFilter',
         },
+        'important_django_request': {
+            '()': 'sentry.logging.handlers.MessageContainsFilter',
+            'contains': ["CSRF"]
+        }
     },
     'root': {
         'level': 'NOTSET',
@@ -618,7 +654,7 @@ LOGGING = {
     'overridable': ['celery', 'sentry'],
     'loggers': {
         'celery': {
-            'level': 'WARN',
+            'level': 'WARNING',
         },
         'sentry': {
             'level': 'INFO',
@@ -652,8 +688,8 @@ LOGGING = {
             'level': 'INFO',
         },
         'django.request': {
-            'level': 'ERROR',
-            'handlers': ['console'],
+            'level': 'WARNING',
+            'handlers': ['console', 'metrics', 'django_internal'],
             'propagate': False,
         },
         'toronado': {
@@ -711,20 +747,32 @@ SENTRY_FEATURES = {
     'auth:register': True,
     'organizations:api-keys': False,
     'organizations:create': True,
+    'organizations:repos': True,
     'organizations:sso': True,
-    'organizations:saml2': False,
-    'organizations:callsigns': True,
+    'organizations:sso-saml2': False,
+    'organizations:sso-rippling': False,
     'organizations:group-unmerge': False,
     'organizations:integrations-v3': False,
+    'organizations:invite-members': True,
+    'organizations:new-settings': True,
+    'organizations:require-2fa': False,
+    'organizations:environments': False,
+    'organizations:internal-catchall': False,
+    'organizations:new-teams': True,
+    'organizations:code-owners': True,
+    'organizations:unreleased-changes': False,
+    'organizations:dashboard': True,
+    'organizations:suggested-commits': True,
+    'organizations:relay': False,
     'projects:global-events': False,
     'projects:plugins': True,
     'projects:dsym': False,
     'projects:sample-events': True,
     'projects:data-forwarding': True,
     'projects:rate-limits': True,
-    'projects:custom-filters': False,
+    'projects:discard-groups': False,
     'projects:custom-inbound-filters': False,
-    'projects:stream-hit-counts': False,
+    'projects:minidump': True,
 }
 
 # Default time zone for localization in the UI.
@@ -751,6 +799,7 @@ SENTRY_LOGIN_URL = None
 
 # Default project ID (for internal errors)
 SENTRY_PROJECT = 1
+SENTRY_PROJECT_KEY = None
 
 # Project ID for recording frontend (javascript) exceptions
 SENTRY_FRONTEND_PROJECT = None
@@ -782,7 +831,10 @@ SENTRY_SMTP_HOST = 'localhost'
 SENTRY_SMTP_PORT = 1025
 
 SENTRY_INTERFACES = {
-    'csp': 'sentry.interfaces.csp.Csp',
+    'csp': 'sentry.interfaces.security.Csp',
+    'hpkp': 'sentry.interfaces.security.Hpkp',
+    'expectct': 'sentry.interfaces.security.ExpectCT',
+    'expectstaple': 'sentry.interfaces.security.ExpectStaple',
     'device': 'sentry.interfaces.device.Device',
     'exception': 'sentry.interfaces.exception.Exception',
     'logentry': 'sentry.interfaces.message.Message',
@@ -805,7 +857,7 @@ SENTRY_INTERFACES = {
     'sentry.interfaces.Query': 'sentry.interfaces.query.Query',
     'sentry.interfaces.Http': 'sentry.interfaces.http.Http',
     'sentry.interfaces.User': 'sentry.interfaces.user.User',
-    'sentry.interfaces.Csp': 'sentry.interfaces.csp.Csp',
+    'sentry.interfaces.Csp': 'sentry.interfaces.security.Csp',
     'sentry.interfaces.AppleCrashReport': 'sentry.interfaces.applecrash.AppleCrashReport',
     'sentry.interfaces.Breadcrumbs': 'sentry.interfaces.breadcrumbs.Breadcrumbs',
     'sentry.interfaces.Contexts': 'sentry.interfaces.contexts.Contexts',
@@ -827,6 +879,7 @@ SENTRY_FILESTORE_ALIASES = {
 
 SENTRY_ANALYTICS_ALIASES = {
     'noop': 'sentry.analytics.Analytics',
+    'pubsub': 'sentry.analytics.pubsub.PubSubAnalytics',
 }
 
 # set of backends that do not support needing SMTP mail.* settings
@@ -846,7 +899,7 @@ SENTRY_SMTP_DISABLED_BACKENDS = frozenset(
 # make projects public
 SENTRY_ALLOW_PUBLIC_PROJECTS = True
 
-# Can users be invited to organizations?
+# Will an invite be sent when a member is added to an organization?
 SENTRY_ENABLE_INVITES = True
 
 # Default to not sending the Access-Control-Allow-Origin header on api/store
@@ -893,12 +946,29 @@ SENTRY_RATELIMITER_OPTIONS = {}
 # The default value for project-level quotas
 SENTRY_DEFAULT_MAX_EVENTS_PER_MINUTE = '90%'
 
+# Snuba configuration
+SENTRY_SNUBA = os.environ.get('SNUBA', 'http://localhost:1218')
+
 # Node storage backend
 SENTRY_NODESTORE = 'sentry.nodestore.django.DjangoNodeStorage'
 SENTRY_NODESTORE_OPTIONS = {}
 
+# Tag storage backend
+_SENTRY_TAGSTORE_DEFAULT_MULTI_OPTIONS = {
+    'backends': [
+        ('sentry.tagstore.legacy.LegacyTagStorage', {}),
+        ('sentry.tagstore.v2.V2TagStorage', {}),
+    ],
+    'runner': 'ImmediateRunner',
+}
+SENTRY_TAGSTORE = os.environ.get('SENTRY_TAGSTORE', 'sentry.tagstore.legacy.LegacyTagStorage')
+SENTRY_TAGSTORE_OPTIONS = (
+    _SENTRY_TAGSTORE_DEFAULT_MULTI_OPTIONS if 'SENTRY_TAGSTORE_DEFAULT_MULTI_OPTIONS' in os.environ
+    else {}
+)
+
 # Search backend
-SENTRY_SEARCH = 'sentry.search.django.DjangoSearchBackend'
+SENTRY_SEARCH = os.environ.get('SENTRY_SEARCH', 'sentry.search.django.DjangoSearchBackend')
 SENTRY_SEARCH_OPTIONS = {}
 # SENTRY_SEARCH_OPTIONS = {
 #     'urls': ['http://localhost:9200/'],
@@ -976,6 +1046,7 @@ SENTRY_SCOPES = set(
         'org:read',
         'org:write',
         'org:admin',
+        'org:integrations',
         'member:read',
         'member:write',
         'member:admin',
@@ -986,6 +1057,7 @@ SENTRY_SCOPES = set(
         'project:write',
         'project:admin',
         'project:releases',
+        'project:integrations',
         'event:read',
         'event:write',
         'event:admin',
@@ -998,6 +1070,9 @@ SENTRY_SCOPE_SETS = (
         ('org:write', 'Read and write access to organization details.'),
         ('org:read', 'Read access to organization details.'),
     ), (
+        ('org:integrations', 'Read, write, and admin access to organization integrations.'),
+        ('project:integrations', 'Read, write, and admin access to project integrations.'),
+    ), (
         ('member:admin', 'Read, write, and admin access to organization members.'),
         ('member:write', 'Read and write access to organization members.'),
         ('member:read', 'Read access to organization members.'),
@@ -1008,7 +1083,9 @@ SENTRY_SCOPE_SETS = (
         ('project:admin', 'Read, write, and admin access to projects.'),
         ('project:write',
          'Read and write access to projects.'), ('project:read', 'Read access to projects.'),
-    ), (('project:releases', 'Read, write, and admin access to project releases.'), ), (
+    ), (
+        ('project:releases', 'Read, write, and admin access to project releases.'),
+    ), (
         ('event:admin', 'Read, write, and admin access to events.'),
         ('event:write',
          'Read and write access to events.'), ('event:read', 'Read access to events.'),
@@ -1023,14 +1100,10 @@ SENTRY_DEFAULT_ROLE = 'member'
 # in the chain (they still require the appropriate scope).
 SENTRY_ROLES = (
     {
-        'id':
-        'member',
-        'name':
-        'Member',
-        'desc':
-        'Members can view and act on events, as well as view most other data within the organization.',
-        'scopes':
-        set(
+        'id': 'member',
+        'name': 'Member',
+        'desc': 'Members can view and act on events, as well as view most other data within the organization.',
+        'scopes': set(
             [
                 'event:read',
                 'event:write',
@@ -1043,14 +1116,10 @@ SENTRY_ROLES = (
             ]
         ),
     }, {
-        'id':
-        'admin',
-        'name':
-        'Admin',
-        'desc':
-        'Admin privileges on any teams of which they\'re a member. They can create new teams and projects, as well as remove teams and projects which they already hold membership on.',
-        'scopes':
-        set(
+        'id': 'admin',
+        'name': 'Admin',
+        'desc': 'Admin privileges on any teams of which they\'re a member. They can create new teams and projects, as well as remove teams and projects which they already hold membership on.',
+        'scopes': set(
             [
                 'event:read',
                 'event:write',
@@ -1061,22 +1130,19 @@ SENTRY_ROLES = (
                 'project:write',
                 'project:admin',
                 'project:releases',
+                'project:integrations'
                 'team:read',
                 'team:write',
                 'team:admin',
+                'org:integrations',
             ]
         ),
     }, {
-        'id':
-        'manager',
-        'name':
-        'Manager',
-        'desc':
-        'Gains admin access on all teams as well as the ability to add and remove members.',
-        'is_global':
-        True,
-        'scopes':
-        set(
+        'id': 'manager',
+        'name': 'Manager',
+        'desc': 'Gains admin access on all teams as well as the ability to add and remove members.',
+        'is_global': True,
+        'scopes': set(
             [
                 'event:read',
                 'event:write',
@@ -1088,28 +1154,26 @@ SENTRY_ROLES = (
                 'project:write',
                 'project:admin',
                 'project:releases',
+                'project:integrations',
                 'team:read',
                 'team:write',
                 'team:admin',
                 'org:read',
                 'org:write',
+                'org:integrations',
             ]
         ),
     }, {
-        'id':
-        'owner',
-        'name':
-        'Owner',
-        'desc':
-        'Gains full permission across the organization. Can manage members as well as perform catastrophic operations such as removing the organization.',
-        'is_global':
-        True,
-        'scopes':
-        set(
+        'id': 'owner',
+        'name': 'Owner',
+        'desc': 'Gains full permission across the organization. Can manage members as well as perform catastrophic operations such as removing the organization.',
+        'is_global': True,
+        'scopes': set(
             [
                 'org:read',
                 'org:write',
                 'org:admin',
+                'org:integrations',
                 'member:read',
                 'member:write',
                 'member:admin',
@@ -1179,6 +1243,23 @@ SENTRY_ONPREMISE = True
 # when checking REMOTE_ADDR ip addresses
 SENTRY_USE_X_FORWARDED_FOR = True
 
+SENTRY_DEFAULT_INTEGRATIONS = (
+    'sentry.integrations.bitbucket.BitbucketIntegrationProvider',
+    'sentry.integrations.slack.SlackIntegrationProvider',
+    'sentry.integrations.github.GitHubIntegrationProvider',
+    'sentry.integrations.github_enterprise.GitHubEnterpriseIntegrationProvider',
+    'sentry.integrations.jira.JiraIntegrationProvider',
+    'sentry.integrations.vsts.VSTSIntegrationProvider',
+)
+
+SENTRY_INTERNAL_INTEGRATIONS = (
+    'bitbucket',
+    'github',
+    'github-enterprise',
+    'jira',
+    'vsts',
+)
+
 
 def get_raven_config():
     return {
@@ -1212,14 +1293,14 @@ SUDO_URL = 'sentry-sudo'
 
 # TODO(dcramer): move this to sentry.io so it can be automated
 SDK_VERSIONS = {
-    'raven-js': '3.16.0',
-    'raven-node': '2.1.0',
-    'raven-python': '6.1.0',
-    'raven-ruby': '2.5.3',
-    'sentry-cocoa': '3.1.2',
-    'sentry-java': '1.2.0',
-    'sentry-laravel': '0.7.0',
-    'sentry-php': '1.7.0',
+    'raven-js': '3.21.0',
+    'raven-node': '2.3.0',
+    'raven-python': '6.4.0',
+    'raven-ruby': '2.7.1',
+    'sentry-cocoa': '3.11.1',
+    'sentry-java': '1.6.4',
+    'sentry-laravel': '0.8.0',
+    'sentry-php': '1.8.2',
 }
 
 SDK_URLS = {
@@ -1251,3 +1332,15 @@ DEPRECATED_SDKS = {
 }
 
 SOUTH_TESTS_MIGRATE = os.environ.get('SOUTH_TESTS_MIGRATE', '0') == '1'
+
+TERMS_URL = None
+PRIVACY_URL = None
+
+# Toggles whether minidumps should be cached
+SENTRY_MINIDUMP_CACHE = False
+# The location for cached minidumps
+SENTRY_MINIDUMP_PATH = '/tmp/minidump'
+
+# Relay
+# List of PKs whitelisted by Sentry
+SENTRY_RELAY_WHITELIST_PK = []
