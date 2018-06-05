@@ -24,7 +24,6 @@ from sentry.utils import json
 
 from sentry.integrations.exceptions import ApiError
 from .repository import GitHubRepositoryProvider
-from .client import GitHubAppsClient
 
 logger = logging.getLogger('sentry.webhooks')
 
@@ -38,7 +37,7 @@ def get_external_id(username):
 
 
 class Webhook(object):
-    def _handle(self, event, organization, repo):
+    def _handle(self, integration, event, organization, repo):
         raise NotImplementedError
 
     def __call__(self, event):
@@ -66,12 +65,12 @@ class Webhook(object):
                     repo.config['name'] = event['repository']['full_name']
                     repo.save()
 
-                self._handle(event, orgs[repo.organization_id], repo)
+                self._handle(integration, event, orgs[repo.organization_id], repo)
 
 
 class InstallationEventWebhook(Webhook):
     # https://developer.github.com/v3/activity/events/types/#installationevent
-    def _handle(self, event, organization, repo):
+    def _handle(self, integration, event, organization, repo):
         # TODO(maxbittker) these might need different behavior for missing
         # repository models in __call__
         pass
@@ -79,7 +78,7 @@ class InstallationEventWebhook(Webhook):
 
 class InstallationRepositoryEventWebhook(Webhook):
     # https://developer.github.com/v3/activity/events/types/#installationrepositoriesevent
-    def _handle(self, event, organization, repo):
+    def _handle(self, integration, event, organization, repo):
         # TODO(maxbittker) these might need different behavior for missing
         # repository models in __call__
         pass
@@ -88,9 +87,9 @@ class InstallationRepositoryEventWebhook(Webhook):
 class PushEventWebhook(Webhook):
     # https://developer.github.com/v3/activity/events/types/#pushevent
 
-    def _handle(self, event, organization, repo):
+    def _handle(self, integration, event, organization, repo):
         authors = {}
-        client = GitHubAppsClient(event['installation']['id'])
+        client = integration.get_installation().get_client()
         gh_username_cache = {}
 
         for commit in event['commits']:
