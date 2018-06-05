@@ -51,7 +51,7 @@ API_ERRORS = {
 class GitHubIntegration(Integration, RepositoryMixin):
 
     def get_client(self):
-        return GitHubAppsClient(external_id=self.model.external_id)
+        return GitHubAppsClient(integration=self.model)
 
     def get_repositories(self):
         return self.get_client().get_repositories()
