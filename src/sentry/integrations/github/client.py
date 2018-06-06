@@ -11,6 +11,9 @@ class GitHubClientMixin(ApiClient):
 
     base_url = 'https://api.github.com'
 
+    def get_jwt(self):
+        return get_jwt()
+
     def get_last_commits(self, repo, end_sha):
         # return api request that fetches last ~30 commits
         # see https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository
@@ -84,14 +87,10 @@ class GitHubClientMixin(ApiClient):
             },
         )
 
-    def get_jwt(self):
-        return get_jwt()
+    def create_issue(self, repo, data):
+        endpoint = '/repos/{}/{}/issues'.format(self.integration.name, repo)
+        return self.post(endpoint, data=data)
 
 
 class GitHubAppsClient(GitHubClientMixin):
-
-    def __init__(self, external_id):
-        self.external_id = external_id
-        self.token = None
-        self.expires_at = None
-        super(GitHubAppsClient, self).__init__()
+    pass

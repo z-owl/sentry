@@ -5,10 +5,11 @@ from django.utils.translation import ugettext_lazy as _
 from sentry import http, options
 from sentry.identity.pipeline import IdentityProviderPipeline
 from sentry.identity.github import get_user_info
-from sentry.integrations import Integration, IntegrationProvider, IntegrationMetadata
+from sentry.integrations import Integration, IntegrationFeatures, IntegrationProvider, IntegrationMetadata
 from sentry.integrations.exceptions import ApiError
 from sentry.integrations.constants import ERR_INTERNAL, ERR_UNAUTHORIZED
 from sentry.integrations.repositories import RepositoryMixin
+from sentry.integrations.issues import IssueSyncMixin
 from sentry.pipeline import NestedPipelineView, PipelineView
 from sentry.utils.http import absolute_uri
 
@@ -24,20 +25,13 @@ Define a relationship between Sentry and GitHub.
  * Create or link existing GitHub issues. (coming soon)
 """
 
-alert_link = {
-    'text': 'Looking to add one of your repositories to sync commit data? Add a **Repo** for your organization.',
-    'link': '/settings/{orgId}/repos/'
-}
-
 metadata = IntegrationMetadata(
     description=DESCRIPTION.strip(),
     author='The Sentry Team',
     noun=_('Installation'),
     issue_url='https://github.com/getsentry/sentry/issues/new?title=GitHub%20Integration:%20&labels=Component%3A%20Integrations',
     source_url='https://github.com/getsentry/sentry/tree/master/src/sentry/integrations/github',
-    aspects={
-        'alert_link': alert_link,
-    }
+    aspects={},
 )
 
 API_ERRORS = {
@@ -48,13 +42,30 @@ API_ERRORS = {
 }
 
 
-class GitHubIntegration(Integration, RepositoryMixin):
-
+class GitHubIntegration(Integration, IssueSyncMixin, RepositoryMixin):
     def get_client(self):
         return GitHubAppsClient(external_id=self.model.external_id)
 
     def get_repositories(self):
         return self.get_client().get_repositories()
+
+    def create_issue(self, data, **kwargs):
+        client = self.get_client()
+
+        repo = kwargs.get('repo')
+        if not repo:
+            raise IntegrationError('repo kwarg must be provided')
+
+        try:
+            issue = client.create_issue(repo, data)
+        except ApiError as e:
+            raise IntegrationError(self.message_from_error(e))
+
+        return {
+            'key': issue['number'],
+            'title': issue['title'],
+            'description': issue['body'],
+        }
 
     def message_from_error(self, exc):
         if isinstance(exc, ApiError):
