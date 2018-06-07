@@ -14,7 +14,12 @@ class DualStorage(Storage):
 
     def __init__(self, **settings):
         storages = {
-            's3': s3.S3Boto3Storage(bucket_name=settings['s3_bucket_name'], **settings),
+            's3': s3.S3Boto3Storage(
+                access_key=settings['s3_access_key'],
+                secret_key=settings['s3_secret_key'],
+                bucket_name=settings['s3_bucket_name'],
+                **settings
+            ),
             'gcs': gcs.GoogleCloudStorage(bucket_name=settings['gcs_bucket_name'], **settings),
         }
 
