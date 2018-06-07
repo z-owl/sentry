@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from botocore.exceptions import ClientError
+from google.cloud.exceptions import NotFound
 from django.core.files.storage import Storage
 
 from . import s3
@@ -42,18 +44,16 @@ class DualStorage(Storage):
         # always ensure primary runs
         self.storage_read = self.storage_read_primary
         try:
-            return self.storage_read._open(name, mode)
-            # TODO: look up exception via storages
-            # boto exceptions are generated via factory; cannot be caught even with bare except
-            # https://stackoverflow.com/questions/46174385/properly-catch-boto3-errors
-            # https://stackoverflow.com/questions/33068055/boto3-python-and-how-to-handle-errors
-            # https://stackoverflow.com/questions/42975609/how-to-capture-botocores-nosuchkey-exception/44811870
-        except BaseException:
+            stuff = self.storage_read._open(name, mode)
+            stuff.seek(0)  # use network to detect existence of file
+            return stuff
+        except (ClientError, NotFound) as e:
+            print('WARNING: trying fallback storage; primary storage failed:', e)
             # fallback to switching secondary to active
             if self.storage_read_secondary is not None:
                 self.storage_read = self.storage_read_secondary
                 return self.storage_read._open(name, mode)
-            raise DualStorageException('primary storage failed and no fallback was specified')
+            raise DualStorageException('FATAL: no fallback storage was specified')
 
     def _save(self, name, content):
         self.storage_write = self.storage_write_primary
