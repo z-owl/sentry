@@ -89,5 +89,4 @@ class DualStorage(Storage):
         raise NotImplementedError()
 
     def exists(self, name):
-        raise NotImplementedError()
-        #return self.storage_read.exists(name)
+        return self.storage_s3.exists(name) or self.storage_gcs.exists(name)
