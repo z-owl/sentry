@@ -41,8 +41,6 @@ class DualStorageFile(File):
         return self.file_read.size()
 
     def _get_file(self):
-        # always ensure primary runs
-        self.file_read = self.file_read_primary
         try:
             return self.file_read._get_file()
         except (ClientError, NotFound) as e:
