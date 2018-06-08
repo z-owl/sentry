@@ -48,7 +48,10 @@ class DualStorageFile(File):
             # fallback to switching secondary to active
             if self.file_read_secondary is not None:
                 self.file_read = self.file_read_secondary
-                return self.file_read._get_file()
+                try:
+                    return self.file_read._get_file()
+                except (ClientError, NotFound) as e:
+                    raise DualStorageException('FATAL: fallback storage failed:', e)
             raise DualStorageException('FATAL: no fallback storage was specified')
 
     def _set_file(self, value):
