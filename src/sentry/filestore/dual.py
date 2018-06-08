@@ -66,7 +66,8 @@ class DualStorageFile(File):
         return self.file_write.write(content)
 
     def close(self):
-        return self.file_write.close()
+        self.file_read.close()
+        self.file_write.close()
 
 
 class DualStorage(Storage):
@@ -83,7 +84,7 @@ class DualStorage(Storage):
     def _save(self, name, content):
         self.storage_s3._save(name, content)
         self.storage_gcs._save(name, content)
-        return name  # apparently this needs to be cleaned?
+        return name
 
     def delete(self, name):
         raise NotImplementedError()
