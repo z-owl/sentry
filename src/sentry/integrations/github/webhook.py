@@ -232,7 +232,7 @@ class PushEventWebhook(Webhook):
 class PullRequestEventWebhook(Webhook):
     # https://developer.github.com/v3/activity/events/types/#pullrequestevent
 
-    def _handle(self, event, organization, repo):
+    def _handle(self, integration, event, organization, repo):
         pull_request = event['pull_request']
         number = pull_request['number']
         title = pull_request['title']
