@@ -191,7 +191,7 @@ class ActivityMailDebugView(View):
             project=project,
             group=group,
             message=group.message,
-            data=load_data('python'),
+            node_data=load_data('python'),
             datetime=datetime(2016, 6, 13, 3, 8, 24, tzinfo=timezone.utc),
         )
 
@@ -233,7 +233,7 @@ def alert(request):
         project=project,
         group=group,
         message=group.message,
-        data=load_data(platform),
+        node_data=load_data(platform),
         datetime=to_datetime(
             random.randint(
                 to_timestamp(group.first_seen),
@@ -332,7 +332,7 @@ def digest(request):
                 project=project,
                 group=group,
                 message=group.message,
-                data=load_data('python'),
+                node_data=load_data('python'),
                 datetime=to_datetime(
                     random.randint(
                         to_timestamp(group.first_seen),

@@ -36,7 +36,7 @@ class IssueSyncMixin(object):
     def get_create_issue_config(self, group, **kwargs):
         event = group.get_latest_event()
         if event is not None:
-            Event.objects.bind_nodes([event], 'data')
+            Event.objects.bind_nodes([event], 'node_data')
 
         return [
             {
