@@ -1,4 +1,4 @@
-import {Box} from 'grid-emotion';
+import {Box, Flex} from 'grid-emotion';
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'react-emotion';
@@ -10,17 +10,7 @@ import Button from 'app/components/buttons/button';
 import {Panel, PanelBody, PanelHeader, PanelItem} from 'app/components/panels';
 import PluginIcon from 'app/plugins/components/pluginIcon';
 import theme from 'app/utils/theme';
-
-const ProviderName = styled.div`
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 3px;
-`;
-
-const TeamName = styled.div`
-  color: ${p => p.theme.gray2};
-  font-size: 14px;
-`;
+import Tag from 'app/views/settings/components/tag';
 
 export default class OrganizationIntegrations extends AsyncComponent {
   static propTypes = {
@@ -40,6 +30,7 @@ export default class OrganizationIntegrations extends AsyncComponent {
     let {orgId, projectId} = this.props;
     let orgFeatures = new Set(this.state.organization.features);
     let internalIntegrations = new Set(['jira']);
+    let betaIntegrations = new Set(['jira', 'github', 'slack']);
 
     const integrations = this.state.config.providers
       .filter(provider => {
@@ -58,7 +49,12 @@ export default class OrganizationIntegrations extends AsyncComponent {
                 to={`/settings/${orgId}/${projectId}/integrations/${provider.key}/`}
                 css={{color: theme.gray5}}
               >
-                {provider.name}
+                <Flex align="center">
+                  {provider.name}
+                  {betaIntegrations.has(provider.key) && (
+                    <StyledTag priority="info">Beta</StyledTag>
+                  )}
+                </Flex>
               </Link>
             </ProviderName>
             <TeamName>{provider.metadata.author}</TeamName>
@@ -86,3 +82,19 @@ export default class OrganizationIntegrations extends AsyncComponent {
     );
   }
 }
+
+const ProviderName = styled.div`
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 3px;
+`;
+
+const TeamName = styled.div`
+  color: ${p => p.theme.gray2};
+  font-size: 14px;
+`;
+
+const StyledTag = styled(Tag)`
+  font-size: 1rem;
+  display: inline-flex;
+`;
