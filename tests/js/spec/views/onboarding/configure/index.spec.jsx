@@ -58,6 +58,7 @@ describe('Configure should render correctly', function() {
         slug: 'project-slug',
         id: 'testProject',
         hasAccess: true,
+        isMember: true,
         isBookmarked: false,
         teams: [
           {
@@ -154,6 +155,7 @@ describe('Configure should render correctly', function() {
                   id: 'testProject',
                   hasAccess: true,
                   isBookmarked: false,
+                  isMember: true,
                   teams: [
                     {
                       id: 'coolteam',
