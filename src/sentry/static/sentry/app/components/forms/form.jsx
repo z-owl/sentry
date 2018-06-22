@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import _ from 'lodash';
+import styled from 'react-emotion';
 
 import FormState from 'app/components/forms/state';
 import {t} from 'app/locale';
@@ -122,7 +123,7 @@ export default class Form extends React.Component {
     let nonFieldErrors = this.state.errors && this.state.errors.non_field_errors;
 
     return (
-      <form onSubmit={this.onSubmit} className={this.props.className}>
+      <StyledForm onSubmit={this.onSubmit} className={this.props.className}>
         {isError &&
           !hideErrors && (
             <div className="alert alert-error alert-block">
@@ -162,7 +163,12 @@ export default class Form extends React.Component {
           )}
           {this.props.extraButton}
         </div>
-      </form>
+      </StyledForm>
     );
   }
 }
+
+// Note: this is so we can use this as a selector for SelectField
+const StyledForm = styled('form')``;
+
+export {StyledForm};
