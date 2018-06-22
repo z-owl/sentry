@@ -69,7 +69,6 @@ var appEntry = {
     'react-bootstrap/lib/Modal',
     'react-sparklines',
     'reflux',
-    'select2', // TODO(billy): Remove this #SELECT2
     'vendor/simple-slider/simple-slider',
     'ios-device-list',
     'emotion',
