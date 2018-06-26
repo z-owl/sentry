@@ -392,15 +392,6 @@ const projectSettingsRoutes = (
         component={errorHandler(ProjectPluginDetails)}
       />
     </Route>
-    {/* XXX(epurkhiser): This lives under project configurations for now until
-        we've migrated enough integrations that it can live at the org level. */}
-    <Route
-      path="integrations/:providerKey/"
-      name="Integration Configuration"
-      componentPromise={() =>
-        import(/* webpackChunkName: "Integration" */ './views/settings/organizationIntegrations/integration')}
-      component={errorHandler(LazyLoad)}
-    />
     <Route
       path="integrations/:providerKey/:integrationId/"
       name="Integration Configuration"
