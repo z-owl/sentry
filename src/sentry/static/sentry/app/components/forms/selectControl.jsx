@@ -20,12 +20,16 @@ export default class SelectControl extends React.Component {
     ]),
   };
 
+  static defaultProps = {
+    clearable: false,
+  };
+
   renderArrow = () => {
     return <span className="icon-arrow-down" />;
   };
 
   render() {
-    let {async, creatable, options, choices, ...props} = this.props;
+    let {async, creatable, options, choices, clearable, ...props} = this.props;
 
     // Compatibility with old select2 API
     let choicesOrOptions =
@@ -33,11 +37,16 @@ export default class SelectControl extends React.Component {
         typeof choices === 'function' ? choices(this.props) : choices
       ) || options;
 
+    // "-Removes" props should match `clearable` unless explicitly defined in props
+    // rest props should be after "-Removes" so that it can be overridden
     return (
       <StyledSelect
         arrowRenderer={this.renderArrow}
         async={async}
         creatable={creatable}
+        clearable={clearable}
+        backspaceRemoves={clearable}
+        deleteRemoves={clearable}
         {...props}
         options={choicesOrOptions}
       />
