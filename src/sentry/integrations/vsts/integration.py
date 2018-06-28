@@ -133,10 +133,12 @@ class VstsIntegrationProvider(IntegrationProvider):
 
     def build_integration(self, state):
         data = state['identity']['data']
+        oauth_data = self.get_oauth_data(data)
+        # print(oauth_data)
         account = state['identity']['account']
         instance = state['identity']['instance']
         work_item_subscription = WorkItemWebhook().create_subscription(
-            instance, data, self.oauth_redirect_url, account['AccountId'])
+            instance, oauth_data, self.oauth_redirect_url, account['AccountId'])
         scopes = sorted(VSTSIdentityProvider.oauth_scopes)
         return {
             'name': account['AccountName'],
@@ -151,7 +153,7 @@ class VstsIntegrationProvider(IntegrationProvider):
                 'type': 'vsts',
                 'external_id': account['AccountId'],
                 'scopes': [],
-                'data': self.get_oauth_data(data),
+                'data': oauth_data,
             },
         }
 
