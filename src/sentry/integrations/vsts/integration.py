@@ -12,6 +12,7 @@ from sentry.identity.vsts import VSTSIdentityProvider
 from sentry.utils.http import absolute_uri
 from .client import VstsApiClient
 from .repository import VstsRepositoryProvider
+from .webhooks import WorkItemWebhook
 DESCRIPTION = """
 VSTS
 """
@@ -134,7 +135,8 @@ class VstsIntegrationProvider(IntegrationProvider):
         data = state['identity']['data']
         account = state['identity']['account']
         instance = state['identity']['instance']
-
+        work_item_subscription = WorkItemWebhook().create_subscription(
+            instance, data, self.oauth_redirect_url, account['AccountId'])
         scopes = sorted(VSTSIdentityProvider.oauth_scopes)
         return {
             'name': account['AccountName'],
@@ -142,6 +144,7 @@ class VstsIntegrationProvider(IntegrationProvider):
             'metadata': {
                 'domain_name': instance,
                 'scopes': scopes,
+                'work_item_subscription': work_item_subscription['publisherInputs']['tfsSubscriptionId'],
             },
             # TODO(LB): Change this to a Microsoft account as opposed to a VSTS workspace
             'user_identity': {
