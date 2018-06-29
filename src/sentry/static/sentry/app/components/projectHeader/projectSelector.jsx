@@ -7,7 +7,6 @@ import {Flex} from 'grid-emotion';
 
 import ApiMixin from 'app/mixins/apiMixin';
 
-import ProjectLabel from 'app/components/projectLabel';
 import DropdownLink from 'app/components/dropdownLink';
 import MenuItem from 'app/components/menuItem';
 import Link from 'app/components/link';
@@ -78,7 +77,6 @@ const ProjectSelector = createReactClass({
   getProjectState(state) {
     state = state || this.state;
     let org = this.props.organization;
-    let features = new Set(org.features);
     let filter = state.filter.toLowerCase();
     let projectList = [];
 
@@ -97,11 +95,7 @@ const ProjectSelector = createReactClass({
       }
 
       let fullName;
-      if (features.has('new-teams')) {
-        fullName = [project.name, project.slug];
-      } else {
-        fullName = [team.name, project.name, team.slug, project.slug];
-      }
+      fullName = [project.name, project.slug];
       fullName = fullName.join(' ').toLowerCase();
 
       if (filter && fullName.indexOf(filter) === -1) {
@@ -230,24 +224,8 @@ const ProjectSelector = createReactClass({
   },
 
   getProjectLabel(team, project, hasSingleTeam, highlightText) {
-    let label, text;
-    let features = new Set(this.props.organization.features);
-
-    if (features.has('new-teams')) {
-      label = <span>{project.slug}</span>;
-      text = project.slug;
-    } else if (!hasSingleTeam && project.name.indexOf(team.name) === -1) {
-      label = (
-        <span>
-          {team.name} /{' '}
-          <ProjectLabel project={project} organization={this.props.organization} />
-        </span>
-      );
-      text = team.name + ' / ' + project.name;
-    } else {
-      label = <span>{project.name}</span>;
-      text = project.name;
-    }
+    let label = <span>{project.slug}</span>;
+    let text = project.slug;
 
     if (!highlightText) {
       return label;
@@ -321,20 +299,12 @@ const ProjectSelector = createReactClass({
 
   render() {
     let org = this.props.organization;
-    let features = new Set(org.features);
     let access = new Set(org.access);
     let hasSingleTeam = org.teams.length === 1;
 
-    let projectList;
-    if (features.has('new-teams')) {
-      projectList = sortArray(this.state.projectList, ([team, project]) => {
-        return [!project.isBookmarked, project.name];
-      });
-    } else {
-      projectList = sortArray(this.state.projectList, ([team, project]) => {
-        return [!project.isBookmarked, team.name, project.name];
-      });
-    }
+    let projectList = sortArray(this.state.projectList, ([team, project]) => {
+      return [!project.isBookmarked, project.name];
+    });
 
     let children = projectList.map(([team, project], index) => {
       return this.getProjectNode(

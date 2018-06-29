@@ -222,9 +222,9 @@ exports[`ProjectSelector render() can filter projects by project name 1`] = `
                                 <strong
                                   className="highlight"
                                 >
-                                  Another
+                                  another
                                 </strong>
-                                 Project
+                                -project
                               </span>
                             </div>
                           </Base>
@@ -387,91 +387,6 @@ exports[`ProjectSelector render() can filter projects by team name/project name 
               </li>
               <MenuItem
                 className=""
-                href="/org/another-project/"
-                key="another-project"
-                linkClassName=""
-              >
-                <li
-                  className=""
-                  href={null}
-                  role="presentation"
-                  title={null}
-                >
-                  <a
-                    className=""
-                    href="/org/another-project/"
-                    onClick={[Function]}
-                    tabIndex="-1"
-                  >
-                    <ProjectBadge>
-                      <div
-                        className="css-1dx2nj3-ProjectBadge et07ovj1"
-                      >
-                        <Flex>
-                          <Base
-                            className="css-sncxrr"
-                          >
-                            <div
-                              className="css-sncxrr"
-                              is={null}
-                            >
-                              <StyledPlatformList
-                                direction="left"
-                                platforms={Array []}
-                              >
-                                <PlatformList
-                                  className="css-16pu8f4-StyledPlatformList et07ovj0"
-                                  direction="left"
-                                  platforms={Array []}
-                                >
-                                  <PlatformIcons
-                                    className="css-16pu8f4-StyledPlatformList et07ovj0"
-                                    direction="left"
-                                    platforms={Array []}
-                                  >
-                                    <div
-                                      className="et07ovj0 css-1or6tzj-PlatformIcons-StyledPlatformList ezvce7z0"
-                                      direction="left"
-                                    >
-                                      <StyledPlatformIcon
-                                        platform="default"
-                                        size="16px"
-                                      >
-                                        <Platformicon
-                                          className="css-b9p6z1-StyledPlatformIcon ezvce7z1"
-                                          platform="default"
-                                          size="16px"
-                                        >
-                                          <img
-                                            className="css-b9p6z1-StyledPlatformIcon ezvce7z1"
-                                            height="16px"
-                                            src={
-                                              Object {
-                                                "default": Object {
-                                                  "id": "test",
-                                                  "viewBox": Object {},
-                                                },
-                                              }
-                                            }
-                                            width="16px"
-                                          />
-                                        </Platformicon>
-                                      </StyledPlatformIcon>
-                                    </div>
-                                  </PlatformIcons>
-                                </PlatformList>
-                              </StyledPlatformList>
-                              Another Project
-                            </div>
-                          </Base>
-                        </Flex>
-                      </div>
-                    </ProjectBadge>
-                  </a>
-                </li>
-              </MenuItem>
-              <MenuItem
-                className=""
                 href="/org/test-project/"
                 key="test-project"
                 linkClassName=""
@@ -550,9 +465,9 @@ exports[`ProjectSelector render() can filter projects by team name/project name 
                                 <strong
                                   className="highlight"
                                 >
-                                  Test
+                                  test
                                 </strong>
-                                 Project
+                                -project
                               </span>
                             </div>
                           </Base>
@@ -626,7 +541,7 @@ exports[`ProjectSelector render() lists projects and has filter 1`] = `
               platforms={Array []}
             />
             <span>
-              Another Project
+              another-project
             </span>
           </Flex>
         </ProjectBadge>
@@ -644,7 +559,7 @@ exports[`ProjectSelector render() lists projects and has filter 1`] = `
               platforms={Array []}
             />
             <span>
-              Test Project
+              test-project
             </span>
           </Flex>
         </ProjectBadge>
